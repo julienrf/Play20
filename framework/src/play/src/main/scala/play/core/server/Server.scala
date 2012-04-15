@@ -50,15 +50,17 @@ trait Server {
 
   def mode: Mode.Mode
 
-  def getHandlerFor(request: RequestHeader): Either[Result, (Handler, Application)] = {
+  def getHandlerFor(request: RequestHeader): Either[Result, (RoutedRequest, Handler, Application)] = {
 
     import scala.util.control.Exception
 
-    def sendHandler: Either[Throwable, (Handler, Application)] = {
+    def sendHandler: Either[Throwable, (RoutedRequest, Handler, Application)] = {
       try {
         applicationProvider.get.right.map { application =>
-          val maybeAction = application.global.onRouteRequest(request)
-          (maybeAction.getOrElse(Action(BodyParsers.parse.empty)(_ => application.global.onHandlerNotFound(request))), application)
+          application.global.onRouteRequest(request) match {
+            case Some((routedRequest, handler)) => (routedRequest, handler, application)
+            case None => (RoutedRequest(request), Action(BodyParsers.parse.empty)(_ => application.global.onHandlerNotFound(request)), application)
+          }
         }
       } catch {
         case e => Left(e)

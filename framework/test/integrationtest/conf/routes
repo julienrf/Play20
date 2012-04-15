@@ -41,6 +41,9 @@ GET     /javascript-test        controllers.Application.javascriptTest(name)
 GET     /accept                 controllers.Application.accept()
 GET     /accept-java            controllers.JavaApi.accept()
 
+GET     /path-params/:foo       controllers.Application.pathParams()
+GET     /path-params-java/:foo  controllers.Application.pathParams()
+
 # Map static resources from the /public folder to the /public path
 GET     /public/*file           controllers.Assets.at(path="/public", file)
 

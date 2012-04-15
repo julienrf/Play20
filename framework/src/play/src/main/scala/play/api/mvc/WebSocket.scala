@@ -10,7 +10,7 @@ import play.api.libs.concurrent._
  * @tparam A the socket messages type
  * @param f the socket messages generator
  */
-case class WebSocket[A](f: RequestHeader => (Enumerator[A], Iteratee[A, Unit]) => Unit)(implicit val frameFormatter: WebSocket.FrameFormatter[A]) extends Handler {
+case class WebSocket[A](f: RoutedRequest => (Enumerator[A], Iteratee[A, Unit]) => Unit)(implicit val frameFormatter: WebSocket.FrameFormatter[A]) extends Handler {
 
   /**
    * Returns itself, for better support in the routes file.
@@ -68,18 +68,18 @@ object WebSocket {
   /**
    * Creates a WebSocket result from inbound and outbound channels.
    */
-  def using[A](f: RequestHeader => (Iteratee[A, _], Enumerator[A]))(implicit frameFormatter: FrameFormatter[A]): WebSocket[A] = {
+  def using[A](f: RoutedRequest => (Iteratee[A, _], Enumerator[A]))(implicit frameFormatter: FrameFormatter[A]): WebSocket[A] = {
     WebSocket[A](h => (e, i) => { val (readIn, writeOut) = f(h); e |>> readIn; writeOut |>> i })
   }
 
-  def adapter[A](f: RequestHeader => Enumeratee[A, A])(implicit frameFormatter: FrameFormatter[A]): WebSocket[A] = {
+  def adapter[A](f: RoutedRequest => Enumeratee[A, A])(implicit frameFormatter: FrameFormatter[A]): WebSocket[A] = {
     WebSocket[A](h => (in, out) => { in &> f(h) |>> out })
   }
 
   /**
    * Creates a WebSocket result from inbound and outbound channels retrieved asynchronously.
    */
-  def async[A](f: RequestHeader => Promise[(Iteratee[A, _], Enumerator[A])])(implicit frameFormatter: FrameFormatter[A]): WebSocket[A] = {
+  def async[A](f: RoutedRequest => Promise[(Iteratee[A, _], Enumerator[A])])(implicit frameFormatter: FrameFormatter[A]): WebSocket[A] = {
     using { rh =>
       val p = f(rh)
       val it = Iteratee.flatten(p.map(_._1))

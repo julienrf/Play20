@@ -260,7 +260,8 @@ public class Helpers implements play.mvc.Http.Status, play.mvc.Http.HeaderNames 
         try {
             play.core.Router.Routes routes = (play.core.Router.Routes)router.getClassLoader().loadClass(router.getName() + "$").getDeclaredField("MODULE$").get(null);
             if(routes.routes().isDefinedAt(fakeRequest.getWrappedRequest())) {
-                return invokeHandler(routes.routes().apply(fakeRequest.getWrappedRequest()), fakeRequest);
+                scala.Tuple2<scala.collection.immutable.Map<String, String>, play.api.mvc.Handler> r = routes.routes().apply(fakeRequest.getWrappedRequest());
+                return invokeHandler(r._2, fakeRequest.withPathParams(Scala.asJava(r._1)));
             } else {
                 return null;
             }

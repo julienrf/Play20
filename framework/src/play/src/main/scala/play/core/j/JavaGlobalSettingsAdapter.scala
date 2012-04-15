@@ -19,8 +19,8 @@ class JavaGlobalSettingsAdapter(val underlying: play.GlobalSettings) extends Glo
     underlying.onStop(new play.Application(app))
   }
 
-  override def onRouteRequest(request: RequestHeader): Option[Handler] = {
-    Option(underlying.onRouteRequest(request)).map(Some(_)).getOrElse(super.onRouteRequest(request))
+  override def onRouteRequest(request: RequestHeader): Option[(RoutedRequest, Handler)] = {
+    Option(underlying.onRouteRequest(request)).map(r => Some((r._1, r._2))).getOrElse(super.onRouteRequest(request))
   }
 
   override def onError(request: RequestHeader, ex: Throwable): Result = {

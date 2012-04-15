@@ -80,5 +80,9 @@ public class JavaApi extends Controller {
             return badRequest();
         }
     }
+
+    public static Result pathParams() {
+        return ok(request().pathParams().get("foo"));
+    }
 }
 

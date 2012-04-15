@@ -49,7 +49,7 @@ trait JavaHelpers {
    * creates a java request (with an empty body) from a scala RequestHeader
    * @param request incoming requestHeader
    */
-  def createJavaRequest(req: RequestHeader): JRequest = {
+  def createJavaRequest(req: RoutedRequest): JRequest = {
     new JRequest {
 
       def uri = req.uri
@@ -70,6 +70,8 @@ trait JavaHelpers {
         req.queryString.mapValues(_.toArray).asJava
       }
 
+      def pathParams = req.pathParams.asJava
+
       def accept = req.accept.asJava
 
       def accepts(mediaType: String) = req.accepts(mediaType)
@@ -88,7 +90,7 @@ trait JavaHelpers {
    * creates a java context from a scala RequestHeader
    * @param request
    */
-  def createJavaContext(req: RequestHeader): JContext = {
+  def createJavaContext(req: RoutedRequest): JContext = {
     new JContext(createJavaRequest(req),
       req.session.data.asJava,
       req.flash.data.asJava)
@@ -122,6 +124,8 @@ trait JavaHelpers {
       def queryString = {
         req.queryString.mapValues(_.toArray).asJava
       }
+
+      def pathParams = req.pathParams.asJava
 
       def cookies = new JCookies {
         def get(name: String) = (for (cookie <- req.cookies.get(name))

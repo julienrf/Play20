@@ -189,12 +189,6 @@ object Router {
                     Some(part.pos.column))
                 }
               }
-            }.getOrElse {
-              throw RoutesCompilationError(
-                file,
-                "Missing parameter in call definition: " + name,
-                Some(part.pos.line),
-                Some(part.pos.column))
             }
           }
         }
@@ -261,7 +255,7 @@ object Router {
                     |
                     |%s 
                     |    
-                    |def routes:PartialFunction[RequestHeader,Handler] = {        
+                    |def routes:PartialFunction[RequestHeader,(Map[String, String], Handler)] = {
                     |%s
                     |}
                     |    
@@ -400,7 +394,7 @@ object Router {
                                   route.call.parameters.getOrElse(Nil).find(_.name == name).map { param =>
                                     "(\"\"\" + implicitly[PathBindable[" + param.typeName + "]].javascriptUnbind + \"\"\")" + """("""" + param.name + """", """ + localNames.get(param.name).getOrElse(param.name) + """)"""
                                   }.getOrElse {
-                                    throw new Error("missing key " + name)
+                                    "\"TODO\""
                                   }
                                 }
                               }.mkString(" + "),
@@ -662,7 +656,7 @@ object Router {
                                   route.call.parameters.getOrElse(Nil).find(_.name == name).map { param =>
                                     """implicitly[PathBindable[""" + param.typeName + """]].unbind("""" + param.name + """", """ + localNames.get(param.name).getOrElse(param.name) + """)"""
                                   }.getOrElse {
-                                    throw new Error("missing key " + name)
+                                    "\"TODO\""
                                   }
 
                                 }
@@ -792,9 +786,9 @@ object Router {
           """
                         |%s
                         |case %s%s(params) => {
-                        |   call%s { %s
+                        |   (params.path, call%s { %s
                         |        invokeHandler(_root_.%s%s, %s)
-                        |   }
+                        |   })
                         |}
                     """.stripMargin.format(
             markLines(r),
@@ -1119,7 +1113,7 @@ object Router {
 
     def documentation: Seq[(String, String, String)]
 
-    def routes: PartialFunction[RequestHeader, Handler]
+    def routes: PartialFunction[RequestHeader, (Map[String, String], Handler)]
 
     private[play] def setPrefix(prefix: String)
 
@@ -1259,7 +1253,7 @@ object Router {
         .fold(badRequest, { case (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) => generator(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) })
     }
 
-    def handlerFor(request: RequestHeader): Option[Handler] = {
+    def handlerFor(request: RequestHeader): Option[(Map[String, String], Handler)] = {
       routes.lift(request)
     }
 

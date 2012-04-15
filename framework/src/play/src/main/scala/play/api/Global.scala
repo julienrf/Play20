@@ -57,12 +57,15 @@ trait GlobalSettings {
    * The default is to use the application router to find the appropriate action.
    *
    * @param request the HTTP request header (the body has not been parsed yet)
-   * @return an action to handle this request - if no action is returned, a 404 not found result will be sent to client
+   * @return the routed request and an action to handle this request - if no action is returned, a 404 not found result will be sent to client
    * @see onActionNotFound
    */
-  def onRouteRequest(request: RequestHeader): Option[Handler] = Play.maybeApplication.flatMap(_.routes.flatMap { router =>
-    router.handlerFor(request)
-  })
+  def onRouteRequest(request: RequestHeader): Option[(RoutedRequest, Handler)] =
+    for {
+      app <- Play.maybeApplication
+      router <- app.routes
+      (pathParams, handler) <- router.handlerFor(request)
+    } yield (RoutedRequest(request, pathParams), handler)
 
   /**
    * Called when an exception occurred.

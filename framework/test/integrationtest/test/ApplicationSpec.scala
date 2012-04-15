@@ -215,6 +215,20 @@ class ApplicationSpec extends Specification {
       }
     }
 
+    "provide path parameters as a map" in {
+      "Scala API" in {
+        running(FakeApplication()) {
+          val Some(result) = routeAndCall(FakeRequest(GET, "/path-params/bar"))
+          contentAsString(result) must equalTo ("bar")
+        }
+      }
+      "Java API" in {
+        running(FakeApplication()) {
+          val Some(result) = routeAndCall(FakeRequest(GET, "/path-params-java/bar"))
+          contentAsString(result) must equalTo ("bar")
+        }
+      }
+    }
   }
 
 }

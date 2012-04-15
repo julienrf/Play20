@@ -31,8 +31,9 @@ case class FakeHeaders(data: Map[String, Seq[String]] = Map.empty) extends Heade
  * @param uri The request uri.
  * @param headers The request HTTP headers.
  * @param body The request body.
+ * @param pathParams The routed request path parameters.
  */
-case class FakeRequest[A](method: String, uri: String, headers: FakeHeaders, body: A) extends Request[A] {
+case class FakeRequest[A](method: String, uri: String, headers: FakeHeaders, body: A, pathParams: Map[String, String] = Map.empty) extends Request[A] {
 
   /**
    * The request path.
@@ -43,6 +44,8 @@ case class FakeRequest[A](method: String, uri: String, headers: FakeHeaders, bod
    * The request query String
    */
   lazy val queryString: Map[String, Seq[String]] = play.core.parsers.FormUrlEncodedParser.parse(rawQueryString)
+
+  def withPathParams(p: Map[String, String]): FakeRequest[A] = copy(pathParams = pathParams ++ p)
 
   /**
    * Constructs a new request with additional headers.

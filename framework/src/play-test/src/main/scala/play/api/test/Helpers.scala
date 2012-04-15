@@ -176,7 +176,7 @@ object Helpers extends Status with HeaderNames {
   def routeAndCall[T, ROUTER <: play.core.Router.Routes](router: Class[ROUTER], request: FakeRequest[T]): Option[Result] = {
     val routes = router.getClassLoader.loadClass(router.getName + "$").getDeclaredField("MODULE$").get(null).asInstanceOf[play.core.Router.Routes]
     routes.routes.lift(request).map {
-      case action: Action[_] => action.asInstanceOf[Action[T]](request)
+      case (pathParams, action: Action[_]) => action.asInstanceOf[Action[T]](request.withPathParams(pathParams))
     }
   }
 

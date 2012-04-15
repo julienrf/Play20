@@ -116,12 +116,38 @@ package play.api.mvc {
   }
 
   /**
+   * The request headers and the parameters extracted from the path during the routing process
+   */
+  trait RoutedRequest extends RequestHeader {
+
+    /**
+     * The route path parameters available as a Map
+     */
+    def pathParams: Map[String, String]
+
+  }
+
+  object RoutedRequest {
+    /**
+     * Creates a RoutedRequest from an existing RequestHeader and a map of path parameters
+     */
+    def apply(request: RequestHeader, pPathParams: Map[String, String] = Map.empty) = new RoutedRequest {
+      def uri = request.uri
+      def path = request.path
+      def method = request.method
+      def queryString = request.queryString
+      def headers = request.headers
+      def pathParams = pPathParams
+    }
+  }
+
+  /**
    * The complete HTTP request.
    *
    * @tparam A the body content type.
    */
   @implicitNotFound("Cannot find any HTTP Request here")
-  trait Request[+A] extends RequestHeader {
+  trait Request[+A] extends RoutedRequest {
     self =>
 
     /**
@@ -137,10 +163,26 @@ package play.api.mvc {
       def path = self.path
       def method = self.method
       def queryString = self.queryString
+      def pathParams = self.pathParams
       def headers = self.headers
       lazy val body = f(self.body)
     }
 
+  }
+
+  object Request {
+    /**
+     * Creates a Request[A] from an existing RoutedRequest and a body value
+     */
+    def apply[A](request: RoutedRequest, b: A) = new Request[A] {
+      def uri = request.uri
+      def path = request.path
+      def method = request.method
+      def queryString = request.queryString
+      def pathParams = request.pathParams
+      def headers = request.headers
+      val body = b
+    }
   }
 
   /**
@@ -150,6 +192,7 @@ package play.api.mvc {
     def body = request.body
     def headers = request.headers
     def queryString = request.queryString
+    def pathParams = request.pathParams
     def path = request.path
     def uri = request.uri
     def method = request.method

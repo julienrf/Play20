@@ -111,4 +111,7 @@ object Application extends Controller {
     }
   }
 
+  def pathParams = Action { request =>
+    Ok(request.pathParams("foo"))
+  }
 }

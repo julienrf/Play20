@@ -215,7 +215,7 @@ private[server] class PlayDefaultUpstreamHandler(server: Server, allChannels: De
         handler match {
 
           //execute normal action
-          case Right((action: Action[_], app)) => {
+          case Right((routedRequest, action: Action[_], app)) => {
 
             Logger("play").trace("Serving this request with: " + action)
 
@@ -281,16 +281,7 @@ private[server] class PlayDefaultUpstreamHandler(server: Server, allChannels: De
               eventuallyResultOrBody
                 .flatMap(it => it.run)
                 .map {
-                  _.right.map(b =>
-                    new Request[action.BODY_CONTENT] {
-                      def uri = nettyHttpRequest.getUri
-                      def path = nettyUri.getPath
-                      def method = nettyHttpRequest.getMethod.getName
-                      def queryString = parameters
-                      def headers = rHeaders
-                      def username = None
-                      val body = b
-                    })
+                  _.right.map(b => Request(routedRequest, b))
                 }
 
             eventuallyResultOrRequest.extend(_.value match {
@@ -312,20 +303,20 @@ private[server] class PlayDefaultUpstreamHandler(server: Server, allChannels: De
           }
 
           //execute websocket action
-          case Right((ws @ WebSocket(f), app)) if (websocketableRequest.check) => {
+          case Right((routedRequest, ws @ WebSocket(f), app)) if (websocketableRequest.check) => {
 
             Logger("play").trace("Serving this request with: " + ws)
 
             try {
               val enumerator = websocketHandshake(ctx, nettyHttpRequest, e)(ws.frameFormatter)
-              f(requestHeader)(enumerator, socketOut(ctx)(ws.frameFormatter))
+              f(routedRequest)(enumerator, socketOut(ctx)(ws.frameFormatter))
             } catch {
               case e => e.printStackTrace
             }
           }
 
           //handle bad websocket request
-          case Right((WebSocket(_), _)) => {
+          case Right((_, WebSocket(_), _)) => {
 
             Logger("play").trace("Bad websocket request")
 

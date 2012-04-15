@@ -179,7 +179,12 @@ public class Http {
          * The query string content.
          */
         public abstract Map<String,String[]> queryString();
-        
+
+        /**
+         * The path parameters.
+         */
+        public abstract Map<String, String> pathParams();
+
         /**
          * The request body.
          */

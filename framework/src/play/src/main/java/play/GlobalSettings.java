@@ -1,5 +1,6 @@
 package play;
 
+import play.libs.F;
 import play.mvc.*;
 import play.mvc.Http.*;
 
@@ -68,9 +69,9 @@ public class GlobalSettings {
     * Please note, though, this API is very low level, useful for plugin/module authors only.
     * 
     * @param request the HTTP request header as seen by the core framework (the body has not been parsed yet)
-    * @return an action to handle this request - if no action is returned, a 404 not found result will be sent to client
+    * @return the routed request and an action to handle this request - if no action is returned, a 404 not found result will be sent to client
     */
-    public play.api.mvc.Handler onRouteRequest(play.api.mvc.RequestHeader request) {
+    public F.Tuple<play.api.mvc.RoutedRequest, play.api.mvc.Handler> onRouteRequest(play.api.mvc.RequestHeader request) {
         return null;
     }
 
